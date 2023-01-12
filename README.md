@@ -118,7 +118,6 @@ interacted with the VLE was the most impactful predictor on `final_result` (foll
 
 #### RQ2
 - MSE = 301.56
-- R<sup>2</sup>  = 0.152
 
 Based on feature importances from the RF output, the most influential predictors were 
 `assessment_type` and  `avg_sum_clicks_quiz`.
