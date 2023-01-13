@@ -130,6 +130,7 @@ Based on feature importances from the RF output, the most influential predictors
  - Did not run comparative tests using other ML approaches for comparison (e.g., XGBoost, OLS regression, baysian regression)
  - Did not explore dimensionality reduction (e.g., PCA or clustering methods) to consolidate variance from VLE fields
  - Poor performance on RQ2 was not evaluated in detailed to improve upon. Could perform a residual analysis to discover what types of feature engineering and tuning could improve performance. 
+ - Try one hot encoding (drop_first=True) for `course_module` since not ordinal
 
 ## Reference:
 
