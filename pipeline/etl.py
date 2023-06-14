@@ -3,6 +3,9 @@ import os
 import glob
 import pandas as pd
 import pandasql as ps
+import requests
+from zipfile import ZipFile
+from io import BytesIO
 
 _LOG = logging.getLogger(__name__)
 
@@ -114,14 +117,13 @@ def raw_data_eda(data_dict, base_wd):
     print(summary_df)
 
 
-def read_data():
+def read_data(base_wd):
     """
     Function to read in all data files in 'data' directory
 
     :return: dictionary of raw dataframes from csv files
     """
 
-    base_wd = os.path.normpath(os.getcwd())
     data_dict = {}
 
     for file in glob.glob(base_wd + '\\data\\' + '*.csv'):
@@ -129,13 +131,35 @@ def read_data():
         df = pd.read_csv(file)
         data_dict[name] = df
 
-    return data_dict, base_wd
+    return data_dict
+
+
+def load_data(base_wd):
+    '''
+    Load zipped data from OULAD's website and save in to local 'data' directory
+    '''
+
+    # create data directory if doesn't exist
+    dir = 'data'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    zip_url = 'https://analyse.kmi.open.ac.uk/open_dataset/download'
+
+    r = requests.get(zip_url)
+    z = ZipFile(BytesIO(r.content))
+    save_path = base_wd + '\\data\\'
+    z.extractall(save_path)
 
 
 def run_etl():
 
+    _LOG.info('Downloading data from OULAD.')
+    base_wd = os.path.normpath(os.getcwd())
+    load_data(base_wd)
+
     _LOG.info('Reading in raw data into dataframes.')
-    data_dict, base_wd = read_data()
+    data_dict = read_data(base_wd)
 
     _LOG.info('Running initial EDA on raw data.')
     raw_data_eda(data_dict, base_wd)
