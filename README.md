@@ -9,9 +9,6 @@ environments (VLE) clickstreams, allowing for analyses into the nexus of student
 #### Research questions
 1) What are important predictors for negative course outcomes? (when `final_result` is `withdraw` or `fail`)
 
-2) What variables impact assessment performance? (`score`)
-
-
 #### Project approach and pipeline
 1. Initial data cleaning and ETL --> creates initial master dataframes
    1. Read in raw csv files and save as dataframes in `data_dict` dictionary
@@ -48,8 +45,6 @@ environments (VLE) clickstreams, allowing for analyses into the nexus of student
       1. RQ1 - f1 score, AUC score, confusion matrix
       2. RQ2 - MSE, and R<sup>2</sup> 
       3. Feature importances from RF output
-   2. RQ2 - found Shapley values to understand more about feature importances and their relationship with model predictions
-      1. created waterfall (local model insight) and beeswarm (global model insight)
 
 Note - Random forests were used because they are robust against multicollinearity and skewness 
 
@@ -77,13 +72,6 @@ Cleaned data for RQ1
 - Outcome variable = `final_result` (i.e., pass, withdraw, fail, distinction)
 - 42% Pass, 23% Fail, 10% Distinction, 25% Withdraw
 - Data includes aggregated VLE information about student behavior from whole course duration
-
-Cleaned data for RQ2 
-- 165,291 records (1 row for each student/assessment/course/semester)
-- 22,437 unique students, 7 courses from 2 semesters across 2 years (2013 and 2014)
-- Outcome variable = ‘score’ (percentage between 0 and 100)
-- Average 75.6% (range 0-100)
-- VLE variables aggregated at the assessment level (all VLE interactions up to assessment date)
 
 Notable univariate notes from EDA
 - Most VLE variables, number of previous course attempts, were heavily right skewed
@@ -115,12 +103,6 @@ Notable bivariate EDA notes
 Based on feature importances and Shapley value outputs, the total number of distinct days that students
 interacted with the VLE was the most impactful predictor on `final_result` (followed closely by `n_days_homepage`, `overall_total_clicks`, and `n_days_quiz`).
 
-
-#### RQ2
-- MSE = 301.56
-
-Based on feature importances from the RF output, the most influential predictors were 
-`assessment_type` and  `avg_sum_clicks_quiz`.
 
 ## Limitations:
  - Did not examine bivariate relationships using statistical tests (e.g., t-test, chi-square, correlations, ANOVA)

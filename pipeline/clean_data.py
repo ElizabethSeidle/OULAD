@@ -11,7 +11,7 @@ from sklearn import preprocessing
 _LOG = logging.getLogger(__name__)
 
 
-def feature_eng_clean(df, base_wd, name, rq):
+def feature_eng_clean(df, base_wd, name):
 
     # transform code_presentation into year and semester columns
     df['year'] = df['code_presentation'].str.strip().str[0:4]
@@ -26,12 +26,8 @@ def feature_eng_clean(df, base_wd, name, rq):
     # df2 = df2.T.drop_duplicates().T
 
     # label encoding categorical variables
-    if rq == 2:
-        le_cols = ['final_result', 'age_band', 'imd_band', 'disability', 'gender', 'region', 'highest_education',
-                   'code_module', 'assessment_type', 'semester']
-    if rq == 1:
-        le_cols = ['final_result', 'age_band', 'imd_band', 'disability', 'gender', 'region', 'highest_education',
-                   'code_module', 'semester']
+    le_cols = ['final_result', 'age_band', 'imd_band', 'disability', 'gender', 'region', 'highest_education',
+               'code_module', 'semester']
 
     label_encoder = preprocessing.LabelEncoder()
 
@@ -40,14 +36,6 @@ def feature_eng_clean(df, base_wd, name, rq):
 
     # create overall total clicks column
     df2['overall_total_clicks'] = df2['total_n_days'] * df2['avg_total_sum_clicks']
-
-    # check for relationship between final exam score and final_result (i.e., course outcome)
-    if rq == 2:
-        plt.clf()
-        sns.set_style("whitegrid")
-        scores_plot = sns.boxplot(x='final_result', y='score', data=df, palette="Set3")
-        plt.tight_layout()
-        scores_plot.figure.savefig(base_wd + '\\outputs\\plots\\cleaning\\' + name + '_scores_plot.png')
 
     return df2
 
@@ -68,7 +56,7 @@ def outlier_boxplt(df, name, base_wd):
     fig_outliers.figure.savefig(base_wd + '\\outputs\\plots\\cleaning\\' + name + '_outlier_boxplots.png')
 
 
-def basic_clean(df, base_wd, name, rq):
+def basic_clean(df, base_wd, name):
 
     # missingness
     print(f'Number of missing records for {df}:')
@@ -99,9 +87,6 @@ def basic_clean(df, base_wd, name, rq):
     num_vars = ['num_of_prev_attempts', 'studied_credits'] + \
                list(compress(df.columns, df.columns.str.startswith(tuple(prefixes))))
 
-    if rq == 2:
-        num_vars = num_vars + ['score']
-
     outlier_boxplt(df[num_vars], name, base_wd)
 
     for col in num_vars:
@@ -115,17 +100,16 @@ def basic_clean(df, base_wd, name, rq):
 
 def clean_data(df):
 
-    if 'score' in df.columns:
-        rq = 2
-    else:
-        rq = 1
-
     base_wd = os.path.normpath(os.getcwd())
 
-    df2, num_vars = basic_clean(df, base_wd, df.name, rq)
-    df_cleaned = feature_eng_clean(df2, base_wd, df.name, rq)
+    dir = 'outputs\\plots\\cleaning'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    df2, num_vars = basic_clean(df, base_wd, df.name)
+    df_cleaned = feature_eng_clean(df2, base_wd, df.name)
 
     # save cleaned df
     df_cleaned.to_csv(base_wd + f'\\outputs\\dataframes\\' + df.name + '_cleaned.csv')
 
-    return df_cleaned, rq, df2
+    return df_cleaned, df2

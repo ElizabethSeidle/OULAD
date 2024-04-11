@@ -2,7 +2,6 @@ import logging
 import os
 import glob
 import pandas as pd
-import pandasql as ps
 import requests
 from zipfile import ZipFile
 from io import BytesIO
@@ -49,12 +48,12 @@ def prep_vle_data(df, rq):
     return vle_df
 
 
-def get_master_dfs(data_dict):
+def get_master_df_rq1(data_dict):
     """
-    Merge relevant dataframes and fields from raw data to create two master dataframes
+    Merge relevant dataframes and fields from raw data to create master dataframes
 
     :param data_dict: dictionary of raw dataframes
-    :return: two dataframes with student outcome (final score classification and final exam score), vle info,
+    :return: dataframes with student outcome (final score classification and final exam score), vle info,
         and other student info
     """
     df1 = data_dict['studentInfo']
@@ -65,32 +64,18 @@ def get_master_dfs(data_dict):
     df6 = data_dict['vle']
     keys = ['code_module', 'code_presentation', 'id_student', 'id_assessment', 'id_site']
 
-    # RQ2 outcome variable (i.e., student assessment scores)
-    exams = df3.merge(df5, on=keys[3], how='inner')\
-        .drop(['is_banked', 'date', 'weight'], axis=1)
-
     rq1_df = df1.merge(df4, on=keys[0:3], how='inner')
-    rq2_df = rq1_df.merge(exams, on=keys[0:3], how='inner')
 
     # aggregate VLE student interactions per course
     student_vle = df2.merge(df6, on=['code_module', 'code_presentation', 'id_site'], how='inner')\
         .drop(['week_from', 'week_to'], axis=1)
 
-    # RQ2 VLE data -- only VLE data for on or before assessment date
-    # delete rows where 'date' > 'date_submitted'
-    assessment_vle = rq2_df[['code_module', 'code_presentation', 'id_student', 'id_assessment', 'date_submitted']]\
-        .merge(student_vle, on=keys[0:3], how='inner')
-    index_dates = assessment_vle[assessment_vle['date'] > assessment_vle['date_submitted']].index
-    assessment_vle.drop(index_dates, inplace=True)
-
     rq1_vle_final = prep_vle_data(student_vle, 1)
-    rq2_vle_final = prep_vle_data(assessment_vle, 2)
 
     # merge vle info into student dfs
     rq1_df = rq1_df.merge(rq1_vle_final, on=keys[0:3], how='inner')
-    rq2_df = rq2_df.merge(rq2_vle_final, on=keys[0:4], how='inner')
 
-    return rq1_df, rq2_df
+    return rq1_df
 
 
 def raw_data_eda(data_dict, base_wd):
@@ -112,6 +97,10 @@ def raw_data_eda(data_dict, base_wd):
         'Missing Rows': missing_rows,
         'Column Names': cols
     })
+
+    dir = 'outputs\\dataframes'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
 
     summary_df.to_csv(base_wd + "\\outputs\\dataframes\\raw_tbl_eda.csv")
     print(summary_df)
@@ -165,9 +154,8 @@ def run_etl():
     raw_data_eda(data_dict, base_wd)
 
     _LOG.info('Creating master dataframes.')
-    rq1_df, rq2_df = get_master_dfs(data_dict)
+    rq1_df = get_master_df_rq1(data_dict)
     rq1_df.to_csv(base_wd + "\\outputs\\dataframes\\etl_rq1_df.csv")
-    rq2_df.to_csv(base_wd + "\\outputs\\dataframes\\etl_rq2_df.csv")
     _LOG.info('Master dataframes created and saved.\n')
 
-    return rq1_df, rq2_df
+    return rq1_df
