@@ -16,34 +16,23 @@ def main():
     kickoff = datetime.now()
 
     _LOG.info('Beginning initial EDA and ETL script.')
-    rq1_df, rq2_df = run_etl()
-    rq1_df.name, rq2_df.name = 'rq1_df', 'rq2_df'
+    rq1_df = run_etl()
+    rq1_df.name = 'rq1_df'
     _LOG.info('Initial EDA and ETL script complete.\n')
 
     _LOG.info('Beginning initial data exploration and data cleaning.')
-    rq1_df_cleaned, rq1, rq1_df2 = clean_data(rq1_df)
-    rq2_df_cleaned, rq2, rq2_df2 = clean_data(rq2_df)
+    rq1_df_cleaned, rq1_df2 = clean_data(rq1_df)
     _LOG.info('Initial data exploration and data cleaning complete.\n')
 
     _LOG.info('Beginning EDA with cleaned data.')
-    eda(rq1_df2, rq1)
-    eda(rq2_df2, rq2)
+    eda(rq1_df2)
     _LOG.info('EDA with cleaned data complete.\n')
 
     _LOG.info('Beginning modeling.')
-
     start_time = datetime.now()
-
-    rq1_results_wd_fail = run_model(rq1_df_cleaned, rq1, 4)
-
-    class_time = datetime.now()
-    _LOG.info(f'Classification model duration: {class_time - start_time}')
-
-    rq2_results = run_model(rq2_df_cleaned, rq2, -1)
-
+    run_model(rq1_df_cleaned, 4)
     reg_time = datetime.now()
-    _LOG.info(f'Classification model duration: {class_time - start_time}')
-    _LOG.info(f'Regression model duration: {reg_time - class_time}')
+    _LOG.info(f'RQ1 model duration: {reg_time - start_time}')
 
     _LOG.info('Modeling complete.')
 

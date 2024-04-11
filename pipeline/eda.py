@@ -11,7 +11,7 @@ from scipy import stats
 _LOG = logging.getLogger(__name__)
 
 
-def vle_eda(df, rq, base_wd):
+def vle_eda(df, base_wd):
 
     vle_df = pd.DataFrame({'vle_var': [],
                            'average': [],
@@ -22,11 +22,7 @@ def vle_eda(df, rq, base_wd):
     vle_vars = ['total_n_days', 'avg_total_sum_clicks'] + \
                list(compress(df.columns, df.columns.str.startswith(tuple(prefixes))))
 
-    if rq == 1:
-        vle_vars.append('final_result')
-    else:
-        vle_vars.append('score')
-
+    vle_vars.append('final_result')
     df2 = df[vle_vars]
 
     for col in df2.columns:
@@ -44,7 +40,7 @@ def vle_eda(df, rq, base_wd):
 
         vle_df = vle_df.append(df_temp, ignore_index=True)
 
-    vle_df.to_csv(base_wd + f"\\outputs\\dataframes\\vle_df_rq{rq}.csv")
+    vle_df.to_csv(base_wd + f"\\outputs\\dataframes\\vle_df_rq1.csv")
 
 
 def draw_histograms(df, variables, base_wd, subfolder):
@@ -122,29 +118,17 @@ def scatterplots(df, variables, outcome, base_wd, subfolder):
         plt.savefig(base_wd + f'\\outputs\\plots\\{subfolder}\\' + name + '.png')
 
 
-def bivariate_eda(df, num_vars, cate_vars_short, rq, base_wd, subfolder):
+def bivariate_eda(df, num_vars, cate_vars_short, base_wd, subfolder):
 
-    if rq == 1:
-        outcome = 'final_result'
-        num_vars.append('final_result')
-        cate_vars_short.append('final_result')
-        num_df = df.loc[:, df.columns.isin(num_vars)]
-        cate_df = df.loc[:, df.columns.isin(cate_vars_short)]
+    outcome = 'final_result'
+    num_vars.append('final_result')
+    cate_vars_short.append('final_result')
+    num_df = df.loc[:, df.columns.isin(num_vars)]
+    cate_df = df.loc[:, df.columns.isin(cate_vars_short)]
 
-        draw_corrplots(num_df, base_wd, subfolder)
-        draw_barplots(cate_df, cate_df.columns, base_wd, subfolder, group=True)
-        draw_boxplots(num_df, num_df.columns, outcome, base_wd, subfolder)
-
-    else:
-        outcome = 'score'
-        num_vars.append('score')
-        cate_vars_short.append('score')
-        num_df = df.loc[:, df.columns.isin(num_vars)]
-        cate_df = df.loc[:, df.columns.isin(cate_vars_short)]
-
-        draw_corrplots(num_df, base_wd, subfolder)
-        scatterplots(num_df, num_df.columns, outcome, base_wd, subfolder)
-        draw_boxplots(cate_df, cate_df.columns, outcome, base_wd, subfolder)
+    draw_corrplots(num_df, base_wd, subfolder)
+    draw_barplots(cate_df, cate_df.columns, base_wd, subfolder, group=True)
+    draw_boxplots(num_df, num_df.columns, outcome, base_wd, subfolder)
 
 
 def univariate_eda(df, base_wd, subfolder):
@@ -162,16 +146,16 @@ def univariate_eda(df, base_wd, subfolder):
     return num_vars, cate_vars_short
 
 
-def eda(df, rq):
+def eda(df):
 
     base_wd = os.path.normpath(os.getcwd())
     df = df.drop(columns=['id_student'])
 
-    if rq == 1:
-        subfolder = 'RQ1_EDA'
-    else:
-        subfolder = 'RQ2_EDA'
+    subfolder = 'RQ1_EDA'
+    dir = 'outputs\\plots\\' + subfolder
+    if not os.path.exists(dir):
+        os.makedirs(dir)
 
     num_vars, cate_vars_short = univariate_eda(df, base_wd, subfolder)
-    bivariate_eda(df, num_vars, cate_vars_short, rq, base_wd, subfolder)
-    vle_eda(df, rq, base_wd)
+    bivariate_eda(df, num_vars, cate_vars_short, base_wd, subfolder)
+    vle_eda(df, base_wd)
