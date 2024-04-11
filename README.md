@@ -72,7 +72,7 @@ Raw data summary
 
 
 Cleaned data for RQ1 
-- 28,174 records (1 row for each student/course/semester
+- 28,174 records (1 row for each student/course/semester)
 - 25,149 unique students, 7 courses from 2 semesters across 2 years (2013 and 2014)
 - Outcome variable = `final_result` (i.e., pass, withdraw, fail, distinction)
 - 42% Pass, 23% Fail, 10% Distinction, 25% Withdraw
